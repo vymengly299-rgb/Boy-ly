@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6
+    container_name: boy-ly-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: boy-ly-trading
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # Backend Server
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: boy-ly-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/boy-ly-trading
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-refresh-secret-key}
+      JWT_RESET_SECRET: ${JWT_RESET_SECRET:-your-reset-secret-key}
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5000}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./server/uploads:/app/server/uploads
+    networks:
+      - boy-ly-network
+
+  # Frontend Client
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000/api}
+        REACT_APP_WS_URL: ${REACT_APP_WS_URL:-ws://localhost:5000}
+    container_name: boy-ly-client
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - server
+    networks:
+      - boy-ly-network
+
+  # Admin Dashboard (optional)
+  admin:
+    build:
+      context: .
+      dockerfile: admin/Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000/api}
+        REACT_APP_WS_URL: ${REACT_APP_WS_URL:-ws://localhost:5000}
+    container_name: boy-ly-admin
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - server
+    networks:
+      - boy-ly-network
+
+  # Nginx Reverse Proxy (optional for production)
+  nginx:
+    image: nginx:alpine
+    container_name: boy-ly-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - server
+      - client
+    networks:
+      - boy-ly-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  boy-ly-network:
+    driver: bridge
