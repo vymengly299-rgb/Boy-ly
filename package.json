@@ -1,0 +1,73 @@
+{
+  "name": "boy-ly-trading-signals",
+  "version": "1.0.0",
+  "description": "AI-powered trading signals platform with charts, news, and mobile alerts",
+  "author": "Boy-ly Team",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm start\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "build:all": "cd server && npm run build && cd ../client && npm run build",
+    "start": "cd server && npm start",
+    "start:all": "cd server && npm start",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:restart": "docker-compose restart",
+    "docker:logs": "docker-compose logs -f",
+    "setup": "./setup.sh all",
+    "setup:deps": "./setup.sh install",
+    "setup:env": "./setup.sh setup",
+    "setup:mongodb": "./setup.sh mongodb",
+    "cleanup": "./setup.sh cleanup",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "cd server && npm run lint && cd ../client && npm run lint",
+    "format": "cd server && npm run format && cd ../client && npm run format"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "trading",
+    "signals",
+    "crypto",
+    "stocks",
+    "forex",
+    "ai",
+    "charts",
+    "news",
+    "alerts",
+    "dashboard",
+    "react",
+    "nodejs",
+    "mongodb"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vymengly299-rgb/Boy-ly.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vymengly299-rgb/Boy-ly/issues"
+  },
+  "homepage": "https://github.com/vymengly299-rgb/Boy-ly#readme"
+}
